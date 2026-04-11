@@ -1,8 +1,6 @@
-# Updated Repository
+# Grocery list chatbot
 
 ![Diagram](diagram.png)
-
-Managed by Agent.
 
 ### Key frameworks and technologies
 * Python 3.x
@@ -63,7 +61,7 @@ The architecture is as follows:
 |  PostgreSQL  |
 +---------------+
 ```
-
+https://isaiapedro.github.io/
 ### Improvements
 
 1. **Error Handling**: Implement more robust error handling to handle cases where the database is unavailable or the API request fails.
@@ -71,4 +69,4 @@ The architecture is as follows:
 3. **Scalability**: Optimize the code for scalability by using caching mechanisms and load balancing.
 
 ### Conclusion
-Thanks for reading up until here. I had a ton of fun doing this project and got a lot of useful insights on Python, SQLAlchemy, Twilio, and AWS Lambda. If you want to see similar projects, go to my github page. Feel free to reach me on [LinkedIn](https://www.linkedin.com/in/isaiapedro/) or my [Webpage](https://github.com/isaiapedro/Portfolio-Website).
+Thanks for reading up until here. I had a ton of fun doing this project and got a lot of useful insights on Python, SQLAlchemy, Twilio, and AWS Lambda. If you want to see similar projects, go to my github page. Feel free to reach me on [LinkedIn](https://www.linkedin.com/in/isaiapedro/) or my [Webpage](https://isaiapedro.github.io/).
