@@ -74,7 +74,7 @@ def list_items(db) -> str:
 
     grouped: dict[str, list[GroceryItem]] = {}
     for item in items:
-        cat = item.aisle_category or "Itens Especiais"
+        cat = item.aisle_category or "❓ Itens Especiais"
         grouped.setdefault(cat, []).append(item)
 
     lines = []
@@ -95,7 +95,7 @@ def get_all_items(db) -> list[dict]:
     result = []
     for cat in CATEGORY_ORDER:
         for item in sorted(
-            [i for i in items if (i.aisle_category or "Itens Especiais") == cat],
+            [i for i in items if (i.aisle_category or "❓ Itens Especiais") == cat],
             key=lambda x: x.item_name,
         ):
             result.append({"id": item.id, "name": item.item_name, "qty": item.quantity, "category": cat})

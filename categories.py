@@ -1,21 +1,21 @@
 CATEGORY_ORDER = [
-    "Hortifruti",
-    "Açougue & Peixaria",
-    "Laticínios & Ovos",
-    "Padaria",
-    "Despensa & Mercearia",
-    "Produtos Internacionais",
-    "Biscoitos & Doces",
-    "Bebidas",
-    "Congelados",
-    "Limpeza",
-    "Higiene Pessoal",
-    "Pet Shop",
-    "Itens Especiais",
+    "🥦 Hortifruti",
+    "🥩 Carnes & Peixes",
+    "🧀 Laticínios & Ovos",
+    "🥖 Padaria",
+    "🥫 Despensa & Mercearia",
+    "🥢 Produtos Internacionais",
+    "🍪 Biscoitos & Doces",
+    "🥤 Bebidas",
+    "🧊 Congelados",
+    "🧼 Limpeza",
+    "🧴 Higiene Pessoal",
+    "🐾 Pet Shop",
+    "❓ Itens Especiais"
 ]
 
 _CATEGORY_KEYWORDS: dict[str, list[str]] = {
-    "Hortifruti": [
+    "🥦 Hortifruti": [
         "alface", "tomate", "batata", "cebola", "cenoura", "pimentão", "abobrinha", 
         "pepino", "beterraba", "cogumelo", "ervas", "couve", "espinafre", "maçã", 
         "banana", "laranja", "limão", "uva", "morango", "mirtilo", "manga", 
@@ -26,7 +26,7 @@ _CATEGORY_KEYWORDS: dict[str, list[str]] = {
         "mamão", "maracujá", "kiwi", "tangerina", "mexerica", "ponkan", "goiaba",
         "rúcula", "agrião", "alho-poró", "inhame", "chuchu", "quiabo", "vagem"
     ],
-    "Açougue & Peixaria": [
+    "🥩 Carnes & Peixes": [
         "carne", "frango", "porco", "peixe", "camarão", "atum", "salmão", 
         "linguiça", "calabresa", "costela", "filé", "picanha", "alcatra", 
         "maminha", "fraldinha", "contrafilé", "patinho", "coxão mole", "coxão duro", 
@@ -35,20 +35,20 @@ _CATEGORY_KEYWORDS: dict[str, list[str]] = {
         "tilápia", "bacalhau", "sardinha", "lula", "polvo", "ostra", "carne moída",
         "peito de peru", "copa", "merluza", "pescada", "pintado", "tambaqui"
     ],
-    "Laticínios & Ovos": [
+    "🧀 Laticínios & Ovos": [
         "leite", "manteiga", "queijo", "iogurte", "creme de leite", "ovo", "ovos", 
         "requeijão", "nata", "muçarela", "mussarela", "prato", "provolone", 
         "parmesão", "gorgonzola", "minas", "coalho", "cheddar", "ricota", 
         "leite condensado", "doce de leite", "margarina", "yakult", 
         "leite fermentado", "coalhada", "petit suisse", "danoninho", "catupiry"
     ],
-    "Padaria": [
+    "🥖 Padaria": [
         "pão", "bolo", "torta", "rosca", "coxinha", "pãozinho", "pão francês", 
         "pão de forma", "pão integral", "pão de queijo", "bisnaguinha", "baguete", 
         "croissant", "sonho", "empada", "pastel", "esfiha", "pão doce", "sírio",
         "broa", "panetone", "chocotone", "ciabatta"
     ],
-    "Despensa & Mercearia": [
+    "🥫 Despensa & Mercearia": [
         "arroz", "feijão", "macarrão", "farinha", "açúcar", "sal", "azeite", 
         "molho", "óleo", "vinagre", "mostarda", "maionese", "lentilha", 
         "grão-de-bico", "aveia", "mel", "geleia", "ketchup", "extrato de tomate", 
@@ -58,32 +58,32 @@ _CATEGORY_KEYWORDS: dict[str, list[str]] = {
         "ervilha", "atum em lata", "sardinha em lata", "creme de avelã", "nutella",
         "azeitona", "palmito", "champignon", "leite em pó", "fermento", "achocolatado"
     ],
-    "Produtos Internacionais": [
+    "🥢 Produtos Internacionais": [
         "shoyu", "missô", "leite de coco", "lamen", "lámen", "miojo", "curry", 
         "taco", "tortilha", "wasabi", "tofu", "tahine", "molho inglês", 
         "molho de ostra", "alga", "nori", "kimchi", "sriracha", "óleo de gergelim",
         "guacamole", "hummus", "homus"
     ],
-    "Biscoitos & Doces": [
+    "🍪 Biscoitos & Doces": [
         "salgadinho", "biscoito", "bolacha", "amendoim", "castanha", "nozes", 
         "pipoca", "bala", "doce", "chocolate", "bombom", "chiclete", "marshmallow", 
         "pirulito", "paçoca", "pé de moleque", "goiabada", "bananinha", 
         "barra de cereal", "chips", "doritos", "ruffles", "wafer", "cookies",
         "torrada", "suspiro", "gelatina", "pudim", "leite moça"
     ],
-    "Bebidas": [
+    "🥤 Bebidas": [
         "água", "suco", "refrigerante", "café", "chá", "cerveja", "vinho", 
         "cachaça", "vodka", "energético", "gin", "rum", "espumante", "champanhe", 
         "licor", "mate", "guaraná", "água com gás", "água de coco", "toddy", 
         "nescau", "ice", "kombucha", "cápsula de café", "refrigerante zero"
     ],
-    "Congelados": [
+    "🧊 Congelados": [
         "sorvete", "picolé", "pizza congelada", "nuggets", "hambúrguer", 
         "batata frita", "lasanha congelada", "prato pronto", "pão de queijo congelado", 
         "polpa de fruta", "açaí", "legumes congelados", "empanado", "kibe congelado",
         "torta congelada", "hambúrguer vegetal"
     ],
-    "Limpeza": [
+    "🧼 Limpeza": [
         "detergente", "sabão", "desinfetante", "esponja", "papel toalha", 
         "saco de lixo", "guardanapo", "sabão em pó", "sabão líquido", "amaciante", 
         "água sanitária", "cândida", "álcool", "limpador multiuso", "lustra-móveis", 
@@ -91,7 +91,7 @@ _CATEGORY_KEYWORDS: dict[str, list[str]] = {
         "palha de aço", "bombril", "tira-manchas", "desengordurante", "inseticida",
         "repelente", "purificador de ar", "naftalina"
     ],
-    "Higiene Pessoal": [
+    "🧴 Higiene Pessoal": [
         "sabonete", "creme", "protetor solar", "curativo", "remédio", "vitamina", 
         "desodorante", "shampoo", "xampu", "condicionador", "pasta de dente", 
         "creme dental", "escova de dente", "fio dental", "enxaguante bucal", 
@@ -99,7 +99,7 @@ _CATEGORY_KEYWORDS: dict[str, list[str]] = {
         "loção", "absorvente", "algodão", "cotonete", "band-aid", "papel higiênico",
         "lenço umedecido", "fralda", "talco", "gel de cabelo", "creme de pentear"
     ],
-    "Pet Shop": [
+    "🐾 Pet Shop": [
         "ração", "areia para gato", "petisco", "tapete higiênico", "sachê", 
         "patê", "osso", "coleira", "brinquedo pet", "shampoo pet", "antipulgas",
         "comedouro", "bebedouro", "bifinho"
@@ -130,4 +130,4 @@ def categorize_item(item_name: str) -> str:
         if word in _KEYWORD_TO_CATEGORY:
             return _KEYWORD_TO_CATEGORY[word]
 
-    return "Itens Especiais"
+    return "❓ Itens Especiais"

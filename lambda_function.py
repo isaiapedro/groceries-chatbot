@@ -74,14 +74,14 @@ def _json_resp(data: dict, status: int = 200) -> dict:
 # ---------------------------------------------------------------------------
 
 def _handle_confirm_add_response(db, session, message: str, from_number: str, base_url: str) -> str:
-    """Handle the user's reply to an 'Itens Especiais' confirmation prompt."""
+    """Handle the user's reply to an '❓ Itens Especiais' confirmation prompt."""
     text = message.strip().lower()
     item = session.payload.get("item")
     qty = session.payload.get("qty", 1)
 
     delete_session(db, session)
 
-    # 1. Explicit confirmation → add to Itens Especiais
+    # 1. Explicit confirmation → add to ❓ Itens Especiais
     if text in ("sim", "s", "confirmar", "confirma", "ok"):
         return add_item(db, item, qty)
 
@@ -102,10 +102,10 @@ def _handle_bulk_delete_response(db, session, message: str) -> str:
     text = message.strip().lower()
     items: list[dict] = session.payload.get("items", [])
 
-    if text in ("tudo", "todos"):
+    if text in ("tudo", "todos", "confirmar"):
         clear_all_items(db)
         delete_session(db, session)
-        return f"Pronto! Limpei todos os {len(items)} itens da lista."
+        return f"Tudo limpo! Todos os {len(items)} itens foram removidos da lista. 🚀"
 
     # Parse item names from the reply
     keep_names = {w.strip() for w in text.replace(",", " ").split() if w.strip()}
@@ -118,8 +118,8 @@ def _handle_bulk_delete_response(db, session, message: str) -> str:
     delete_session(db, session)
 
     if kept:
-        return f"Pronto! Removi {len(ids_to_delete)} itens. Mantidos: {', '.join(kept)}."
-    return f"Pronto! Removi todos os {len(ids_to_delete)} itens."
+        return f"Feito! Foram removidos {len(ids_to_delete)} itens. Mantidos na lista: {', '.join(kept)}. ✨"
+    return f"Pronto! Todos os {len(ids_to_delete)} itens marcados foram removidos. 🗑️"
 
 
 def _handle_confirm_delete_response(db, session, message: str) -> str:
@@ -173,12 +173,12 @@ def _dispatch(db, command: dict, from_number: str, base_url: str) -> str:
 
     if action == "add":
         if not item:
-            return "O que você deseja adicionar? Exemplo: 'adicionar leite 2'"
-        if categorize_item(item) == "Itens Especiais":
+            return "Por favor, informe o item que deseja adicionar! 🤔 Exemplo: 'adicionar leite 2'"
+        if categorize_item(item) == "❓ Itens Especiais":
             create_session(db, from_number, "confirm_add", {"item": item, "qty": qty or 1})
             return (
                 f"Não reconheci a categoria de '*{item}*'. "
-                f"Deseja adicionar mesmo assim em *Itens Especiais*? "
+                f"Deseja adicionar mesmo assim em *❓ Itens Especiais*? "
                 f"Responda *sim* para confirmar, ou envie o nome correto do item."
             )
         return add_item(db, item, qty or 1)
@@ -205,23 +205,23 @@ def _dispatch(db, command: dict, from_number: str, base_url: str) -> str:
     if action == "clear_list":
         all_items = get_all_items(db)
         if not all_items:
-            return "A lista de compras já está vazia."
+            return "A lista de compras já está vazia! ✨"
         names = ", ".join(i["name"].capitalize() for i in all_items)
         create_session(db, from_number, "bulk_delete", {"items": all_items})
         return (
-            f"Prestes a excluir:\n{names}\n\n"
-            "Responda com os itens que você *não* pegou para mantê-los, "
-            "ou responda 'tudo' para limpar a lista inteira."
+            f"Os seguintes itens serão excluídos:\n{names}\n\n"
+            "Responda com os itens que você deseja manter, "
+            "ou digite 'tudo' para limpar a lista inteira! 🧹"
         )
 
     if action == "start_shopping":
         all_items = get_all_items(db)
         if not all_items:
-            return "Sua lista de compras está vazia — nada para comprar!"
+            return "Sua lista está vazia! Adicione alguns itens antes de ir às compras. 🛑"
         token = secrets.token_urlsafe(12)
         create_session(db, from_number, "interactive_shopping", {"items": all_items, "token": token})
         shop_url = f"{base_url}/shop?s={token}"
-        return f"Aqui está sua lista de compras:\n{shop_url}\n\nMarque os itens enquanto compra. Quando terminar, pressione 'Compras Finalizadas'."
+        return f"Sessão de compras iniciada! 🛒\n{shop_url}\n\nMarque os itens conforme for comprando. Ao finalizar, pressione 'Compras Finalizadas' no site!"
     texto_ajuda = get_help_text()
     return f"Não entendi o comando.\n\n{texto_ajuda}"
 
