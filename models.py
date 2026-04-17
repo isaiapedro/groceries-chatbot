@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 
@@ -22,3 +23,14 @@ class FamilyMember(Base):
     phone_number = Column(String(50), nullable=False, unique=True)
     name = Column(String(100), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class ShoppingSession(Base):
+    __tablename__ = 'shopping_sessions'
+
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String(50), nullable=False, unique=True)
+    session_type = Column(String(50), nullable=False)  # 'bulk_delete' | 'interactive_shopping'
+    payload = Column(JSONB, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    expires_at = Column(DateTime(timezone=True))

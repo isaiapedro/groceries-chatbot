@@ -23,7 +23,7 @@ echo "Role ARN: $ROLE_ARN"
 echo "==> 2. Packaging Lambda function..."
 rm -rf /tmp/lambda-package && mkdir /tmp/lambda-package
 pip install -r requirements.txt -t /tmp/lambda-package --quiet
-cp lambda_function.py db.py models.py crud.py parser.py /tmp/lambda-package/
+cp lambda_function.py db.py models.py crud.py parser.py categories.py /tmp/lambda-package/
 cd /tmp/lambda-package && zip -r /tmp/function.zip . -q && cd -
 echo "Package size: $(du -sh /tmp/function.zip | cut -f1)"
 
@@ -119,23 +119,79 @@ aws apigateway put-integration \
   --uri "arn:aws:apigateway:$REGION:lambda:path/2015-03-31/functions/$LAMBDA_ARN/invocations" \
   --region "$REGION"
 
-aws apigateway create-deployment \
-  --rest-api-id "$API_ID" \
-  --stage-name prod \
-  --region "$REGION"
+# ---------------------------------------------------------------------------
+# /shop  (GET) — shopping web app
+# ---------------------------------------------------------------------------
+SHOP_RESOURCE_ID=$(aws apigateway get-resources \
+  --rest-api-id "$API_ID" --region "$REGION" \
+  --query 'items[?pathPart==`shop`].id' --output text)
 
-aws lambda add-permission \
-  --function-name "$FUNCTION_NAME" \
-  --statement-id apigateway-invoke \
-  --action lambda:InvokeFunction \
-  --principal apigateway.amazonaws.com \
-  --source-arn "arn:aws:execute-api:$REGION:$ACCOUNT_ID:$API_ID/*/POST/webhook" \
+if [ -z "$SHOP_RESOURCE_ID" ]; then
+  SHOP_RESOURCE_ID=$(aws apigateway create-resource \
+    --rest-api-id "$API_ID" --parent-id "$ROOT_ID" \
+    --path-part shop --region "$REGION" --query 'id' --output text)
+fi
+
+aws apigateway put-method \
+  --rest-api-id "$API_ID" --resource-id "$SHOP_RESOURCE_ID" \
+  --http-method GET --authorization-type NONE \
   --region "$REGION" 2>/dev/null || true
 
+aws apigateway put-integration \
+  --rest-api-id "$API_ID" --resource-id "$SHOP_RESOURCE_ID" \
+  --http-method GET --type AWS_PROXY --integration-http-method POST \
+  --uri "arn:aws:apigateway:$REGION:lambda:path/2015-03-31/functions/$LAMBDA_ARN/invocations" \
+  --region "$REGION"
+
+# ---------------------------------------------------------------------------
+# /shop/finish  (POST) — mark items as purchased
+# ---------------------------------------------------------------------------
+FINISH_RESOURCE_ID=$(aws apigateway get-resources \
+  --rest-api-id "$API_ID" --region "$REGION" \
+  --query 'items[?pathPart==`finish`].id' --output text)
+
+if [ -z "$FINISH_RESOURCE_ID" ]; then
+  FINISH_RESOURCE_ID=$(aws apigateway create-resource \
+    --rest-api-id "$API_ID" --parent-id "$SHOP_RESOURCE_ID" \
+    --path-part finish --region "$REGION" --query 'id' --output text)
+fi
+
+aws apigateway put-method \
+  --rest-api-id "$API_ID" --resource-id "$FINISH_RESOURCE_ID" \
+  --http-method POST --authorization-type NONE \
+  --region "$REGION" 2>/dev/null || true
+
+aws apigateway put-integration \
+  --rest-api-id "$API_ID" --resource-id "$FINISH_RESOURCE_ID" \
+  --http-method POST --type AWS_PROXY --integration-http-method POST \
+  --uri "arn:aws:apigateway:$REGION:lambda:path/2015-03-31/functions/$LAMBDA_ARN/invocations" \
+  --region "$REGION"
+
+# ---------------------------------------------------------------------------
+# Deploy & permissions
+# ---------------------------------------------------------------------------
+aws apigateway create-deployment \
+  --rest-api-id "$API_ID" --stage-name prod --region "$REGION"
+
+# Remove stale permission if it exists, then re-add with full wildcard scope
+aws lambda remove-permission \
+  --function-name "$FUNCTION_NAME" --statement-id apigateway-invoke \
+  --region "$REGION" 2>/dev/null || true
+aws lambda remove-permission \
+  --function-name "$FUNCTION_NAME" --statement-id apigateway-invoke-all \
+  --region "$REGION" 2>/dev/null || true
+aws lambda add-permission \
+  --function-name "$FUNCTION_NAME" --statement-id apigateway-invoke-all \
+  --action lambda:InvokeFunction --principal apigateway.amazonaws.com \
+  --source-arn "arn:aws:execute-api:$REGION:$ACCOUNT_ID:$API_ID/*/*" \
+  --region "$REGION"
+
 WEBHOOK_URL="https://$API_ID.execute-api.$REGION.amazonaws.com/prod/webhook"
+SHOP_URL="https://$API_ID.execute-api.$REGION.amazonaws.com/prod/shop"
 echo ""
 echo "=========================================="
 echo "Deployment complete!"
-echo "Webhook URL: $WEBHOOK_URL"
-echo "Paste this URL into Twilio's sandbox settings."
+echo "Webhook URL : $WEBHOOK_URL"
+echo "Shop base   : $SHOP_URL"
+echo "Paste the Webhook URL into Twilio's sandbox settings."
 echo "=========================================="

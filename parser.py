@@ -1,28 +1,36 @@
 KEYWORDS = {
     'list': [
         'list', 'show', 'what', 'display', 'see', 'all',
-        # pt-BR
         'listar', 'mostrar', 'ver', 'lista', 'tudo',
     ],
     'add': [
         'add', 'buy', 'get', 'need', 'put', 'include', 'want', 'purchase',
-        # pt-BR
         'adicionar', 'comprar', 'pegar', 'precisar', 'colocar', 'incluir', 'quero', 'querer',
     ],
     'delete': [
-        'remove', 'delete', 'bought', 'done', 'got', 'cross', 'check', 'drop', 'cancel',
-        # pt-BR
-        'remover', 'deletar', 'tirar', 'apagar', 'excluir', 'riscar', 'comprei', 'peguei',
+        'remove', 'delete', 'drop', 'cancel',
+        'remover', 'deletar', 'tirar', 'apagar', 'excluir',
     ],
     'modify': [
         'modify', 'change', 'update', 'set', 'adjust', 'edit',
-        # pt-BR
         'modificar', 'mudar', 'atualizar', 'alterar', 'editar', 'trocar',
+    ],
+    'clear_list': [
+        'finished shopping', 'done shopping', 'bought everything', 'all done', 'shopping done',
+        'compras feitas', 'terminei as compras', 'finalizei as compras', 'comprei tudo',
+        'terminei', 'finalizei',
+    ],
+    'start_shopping': [
+        'going shopping', 'at the store', 'starting shopping', 'im at the store',
+        "i'm at the store", 'heading to store', 'at supermarket',
+        'vou às compras', 'vou fazer compras', 'vou ao mercado', 'vou ao supermercado',
+        'indo fazer compras', 'indo ao mercado', 'fui fazer compras',
     ],
 }
 
-# Flat map: keyword string → action
-_KEYWORD_MAP = {kw: action for action, keywords in KEYWORDS.items() for kw in keywords}
+# Multi-word phrases must be checked before single-word keywords
+_MULTI_WORD = {phrase: action for action, phrases in KEYWORDS.items() for phrase in phrases if ' ' in phrase}
+_SINGLE_WORD = {kw: action for action, kws in KEYWORDS.items() for kw in kws if ' ' not in kw}
 
 
 def _extract_quantity_and_item(words: list) -> tuple[int | None, str | None]:
@@ -44,24 +52,33 @@ def parse_command(message: str) -> dict:
     Parse a WhatsApp message into a command dict.
 
     Returns dict with keys: action, item, quantity
-    Possible actions: 'add' | 'delete' | 'modify' | 'list' | 'unknown'
+    Actions: 'add' | 'delete' | 'modify' | 'list' | 'clear_list' | 'start_shopping' | 'unknown'
 
-    Implicit add: messages with no keyword (e.g. "2 apples" or "apples") → add
+    Implicit add: messages with no keyword → treated as add.
     """
-    words = message.strip().lower().split()
+    text = message.strip().lower()
+    words = text.split()
+
     if not words:
         return {'action': 'unknown', 'item': None, 'quantity': None}
 
-    action = _KEYWORD_MAP.get(words[0])
+    # Check multi-word phrases first (longer match wins)
+    for phrase in sorted(_MULTI_WORD, key=len, reverse=True):
+        if text.startswith(phrase):
+            action = _MULTI_WORD[phrase]
+            return {'action': action, 'item': None, 'quantity': None}
 
-    if action == 'list':
-        return {'action': 'list', 'item': None, 'quantity': None}
+    # Single-word keyword at position 0
+    action = _SINGLE_WORD.get(words[0])
+
+    if action in ('list', 'clear_list', 'start_shopping'):
+        return {'action': action, 'item': None, 'quantity': None}
 
     if action in ('add', 'delete', 'modify'):
         quantity, item = _extract_quantity_and_item(words[1:])
         return {'action': action, 'item': item, 'quantity': quantity}
 
-    # No keyword found — treat as implicit add ("2 apples", "apples 2", "apples")
+    # No keyword — implicit add ("2 apples", "apples 2", "apples")
     quantity, item = _extract_quantity_and_item(words)
     if item:
         return {'action': 'add', 'item': item, 'quantity': quantity or 1}
