@@ -6,29 +6,37 @@ from urllib.parse import parse_qs
 
 from db import SessionLocal
 from crud import (
-    add_item, modify_item, delete_item, list_items, get_all_items,
-    delete_items_by_ids, clear_all_items,
+    add_item, modify_item, delete_item, delete_item_by_id, find_items_fuzzy,
+    list_items, get_all_items, delete_items_by_ids, clear_all_items,
     get_or_create_member,
     get_active_session, create_session, get_session_by_token,
     update_session_payload, delete_session,
 )
+from categories import categorize_item
 from parser import parse_command
 
-HELP_TEXT = (
-    "Commands:\n"
-    "• list — show all items\n"
-    "• add <item> <qty> — add item\n"
-    "• remove <item> — remove item\n"
-    "• modify <item> <qty> — update qty\n"
-    "• going shopping — start shopping session\n"
-    "• finished shopping — bulk clear list\n"
-    "Or just send '2 apples' to add directly."
-)
+HELP_DICT = {
+    "lista": "mostra todos os itens",
+    "adicionar <item> <qtd>": "adiciona um item",
+    "remover <item>": "remove um item",
+    "modificar <item> <qtd>": "atualiza a quantidade",
+    "vou fazer compras": "inicia a sessão de compras interativa",
+    "terminei as compras": "limpa os itens comprados",
+}
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def get_help_text() -> str:
+    """Gera a mensagem de ajuda formatada a partir do dicionário."""
+    linhas = ["Comandos:"]
+    for comando, descricao in HELP_DICT.items():
+        linhas.append(f"• {comando} — {descricao}")
+    linhas.append("Ou apenas envie '2 maçãs' para adicionar diretamente.")
+    return "\n".join(linhas)
+
 
 def _base_url(event: dict) -> str:
     host = event.get("headers", {}).get("Host", "")
@@ -65,15 +73,39 @@ def _json_resp(data: dict, status: int = 200) -> dict:
 # Session handlers (WhatsApp side)
 # ---------------------------------------------------------------------------
 
+def _handle_confirm_add_response(db, session, message: str, from_number: str, base_url: str) -> str:
+    """Handle the user's reply to an 'Itens Especiais' confirmation prompt."""
+    text = message.strip().lower()
+    item = session.payload.get("item")
+    qty = session.payload.get("qty", 1)
+
+    delete_session(db, session)
+
+    # 1. Explicit confirmation → add to Itens Especiais
+    if text in ("sim", "s", "confirmar", "confirma", "ok"):
+        return add_item(db, item, qty)
+
+    # 2. Recognised command → execute it directly
+    command = parse_command(message)
+    if command["action"] not in ("unknown",):
+        return _dispatch(db, command, from_number, base_url)
+
+    # 3. Unrecognised input → inform and show commands
+    return (
+        f"Ok, '*{item}*' não foi adicionado.\n\n"
+        + get_help_text()
+    )
+
+
 def _handle_bulk_delete_response(db, session, message: str) -> str:
     """Handle the user's reply to a 'finished shopping' prompt."""
     text = message.strip().lower()
     items: list[dict] = session.payload.get("items", [])
 
-    if text in ("all", "tudo", "everything", "confirm"):
+    if text in ("tudo", "todos"):
         clear_all_items(db)
         delete_session(db, session)
-        return f"Done! Cleared all {len(items)} items from the list."
+        return f"Pronto! Limpei todos os {len(items)} itens da lista."
 
     # Parse item names from the reply
     keep_names = {w.strip() for w in text.replace(",", " ").split() if w.strip()}
@@ -86,8 +118,35 @@ def _handle_bulk_delete_response(db, session, message: str) -> str:
     delete_session(db, session)
 
     if kept:
-        return f"Done! Removed {len(ids_to_delete)} items. Kept: {', '.join(kept)}."
-    return f"Done! Removed all {len(ids_to_delete)} items."
+        return f"Pronto! Removi {len(ids_to_delete)} itens. Mantidos: {', '.join(kept)}."
+    return f"Pronto! Removi todos os {len(ids_to_delete)} itens."
+
+
+def _handle_confirm_delete_response(db, session, message: str) -> str:
+    """Handle the user's reply when multiple items matched a delete search."""
+    candidates: list[dict] = session.payload.get("candidates", [])
+    text = message.strip().lower()
+
+    delete_session(db, session)
+
+    if text in ("cancelar", "nao", "não", "n", "na", "para"):
+        return "Ok, nenhum item foi removido."
+
+    # Match by index ("1", "2", ...)
+    if text.isdigit():
+        idx = int(text) - 1
+        if 0 <= idx < len(candidates):
+            return delete_item_by_id(db, candidates[idx]["id"])
+        return "Número inválido. Nenhum item removido."
+
+    # Match by partial name
+    matches = [c for c in candidates if text in c["name"].lower()]
+    if len(matches) == 1:
+        return delete_item_by_id(db, matches[0]["id"])
+    if len(matches) > 1:
+        return "Ainda ambíguo. Tente novamente com um nome mais específico."
+
+    return "Não entendi. Nenhum item removido."
 
 
 # ---------------------------------------------------------------------------
@@ -98,47 +157,73 @@ def _dispatch(db, command: dict, from_number: str, base_url: str) -> str:
     action = command["action"]
     item = command["item"]
     qty = command["quantity"]
-
+    if action == "help":
+        # Se o usuário digitou "ajuda adicionar", procuramos a palavra "adicionar" no dicionário
+        if item:
+            for comando, descricao in HELP_DICT.items():
+                if item in comando:
+                    return f"Como usar o '{item}':\n• {comando} — {descricao}"
+            return f"Não encontrei ajuda específica para '{item}'.\n\n{get_help_text()}"
+        
+        # Se digitou apenas "ajuda"
+        return get_help_text()
+        
     if action == "list":
         return list_items(db)
 
     if action == "add":
         if not item:
-            return "What do you want to add? Example: 'add milk 2'"
+            return "O que você deseja adicionar? Exemplo: 'adicionar leite 2'"
+        if categorize_item(item) == "Itens Especiais":
+            create_session(db, from_number, "confirm_add", {"item": item, "qty": qty or 1})
+            return (
+                f"Não reconheci a categoria de '*{item}*'. "
+                f"Deseja adicionar mesmo assim em *Itens Especiais*? "
+                f"Responda *sim* para confirmar, ou envie o nome correto do item."
+            )
         return add_item(db, item, qty or 1)
 
     if action == "delete":
         if not item:
-            return "What do you want to remove? Example: 'remove milk'"
-        return delete_item(db, item)
+            return "O que você deseja remover? Exemplo: 'remover leite'"
+        matches = find_items_fuzzy(db, item)
+        if not matches:
+            return f"Nenhum item com '{item}' encontrado na lista."
+        if len(matches) == 1:
+            return delete_item_by_id(db, matches[0].id)
+        # Multiple matches — ask user to pick
+        candidates = [{"id": m.id, "name": m.item_name} for m in matches]
+        create_session(db, from_number, "confirm_delete", {"candidates": candidates})
+        options = "\n".join(f"{i+1}. {c['name']}" for i, c in enumerate(candidates))
+        return f"Encontrei mais de um item com '{item}':\n{options}\n\nQual devo remover? Responda com o número ou nome."
 
     if action == "modify":
         if not item or not qty:
-            return "Usage: 'modify milk 3'"
+            return "Uso: 'modificar leite 3'"
         return modify_item(db, item, qty)
 
     if action == "clear_list":
         all_items = get_all_items(db)
         if not all_items:
-            return "The grocery list is already empty."
+            return "A lista de compras já está vazia."
         names = ", ".join(i["name"].capitalize() for i in all_items)
         create_session(db, from_number, "bulk_delete", {"items": all_items})
         return (
-            f"About to delete:\n{names}\n\n"
-            "Reply with items you *didn't* get to keep them, "
-            "or 'all' to clear everything."
+            f"Prestes a excluir:\n{names}\n\n"
+            "Responda com os itens que você *não* pegou para mantê-los, "
+            "ou responda 'tudo' para limpar a lista inteira."
         )
 
     if action == "start_shopping":
         all_items = get_all_items(db)
         if not all_items:
-            return "Your grocery list is empty — nothing to shop for!"
+            return "Sua lista de compras está vazia — nada para comprar!"
         token = secrets.token_urlsafe(12)
         create_session(db, from_number, "interactive_shopping", {"items": all_items, "token": token})
         shop_url = f"{base_url}/shop?s={token}"
-        return f"Here's your shopping list:\n{shop_url}\n\nTick items as you go. When done, press 'Done Shopping'."
-
-    return f"I didn't understand that.\n\n{HELP_TEXT}"
+        return f"Aqui está sua lista de compras:\n{shop_url}\n\nMarque os itens enquanto compra. Quando terminar, pressione 'Compras Finalizadas'."
+    texto_ajuda = get_help_text()
+    return f"Não entendi o comando.\n\n{texto_ajuda}"
 
 
 # ---------------------------------------------------------------------------
@@ -163,6 +248,10 @@ def _handle_webhook(event: dict) -> dict:
         session = get_active_session(db, from_number)
         if session and session.session_type == "bulk_delete":
             reply = _handle_bulk_delete_response(db, session, incoming_msg)
+        elif session and session.session_type == "confirm_add":
+            reply = _handle_confirm_add_response(db, session, incoming_msg, from_number, base_url)
+        elif session and session.session_type == "confirm_delete":
+            reply = _handle_confirm_delete_response(db, session, incoming_msg)
         else:
             command = parse_command(incoming_msg)
             reply = _dispatch(db, command, from_number, base_url)
@@ -179,13 +268,13 @@ def _handle_webhook(event: dict) -> dict:
 def _handle_shop_page(event: dict) -> dict:
     token = (event.get("queryStringParameters") or {}).get("s", "")
     if not token:
-        return _html("<h2>Invalid link.</h2>", 400)
+        return _html("<h2>Link inválido.</h2>", 400)
 
     db = SessionLocal()
     try:
         session = get_session_by_token(db, token)
         if not session:
-            return _html("<h2>This shopping session has expired or doesn't exist.</h2>", 404)
+            return _html("<h2>Esta sessão de compras expirou ou não existe.</h2>", 404)
         items: list[dict] = session.payload.get("items", [])
     finally:
         db.close()
@@ -212,32 +301,18 @@ def _handle_shop_page(event: dict) -> dict:
         rows_html += "</div>"
 
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shopping List</title>
-<style>
-  body {{ font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 16px; background: #f9f9f9; }}
-  h1 {{ font-size: 1.4rem; margin-bottom: 8px; }}
-  .category {{ background: white; border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }}
-  h3 {{ font-size: .85rem; text-transform: uppercase; color: #888; margin: 0 0 8px; letter-spacing: .05em; }}
-  .item {{ display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 1rem; cursor: pointer; }}
-  .item:last-child {{ border-bottom: none; }}
-  input[type=checkbox] {{ width: 20px; height: 20px; accent-color: #4caf50; flex-shrink: 0; }}
-  .qty {{ color: #aaa; font-size: .85rem; margin-left: auto; }}
-  .item.checked {{ text-decoration: line-through; color: #bbb; }}
-  button {{ width: 100%; padding: 14px; background: #4caf50; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; margin-top: 16px; cursor: pointer; }}
-  button:active {{ background: #388e3c; }}
-  #msg {{ text-align: center; margin-top: 16px; font-size: 1rem; color: #555; }}
-</style>
+<title>Lista de Compras</title>
 </head>
 <body>
-<h1>🛒 Shopping List</h1>
+<h1>🛒 Lista de Compras</h1>
 <form id="shopForm">
   <input type="hidden" name="token" value="{token}">
   {rows_html}
-  <button type="submit">Done Shopping ✓</button>
+  <button type="submit">Compras Finalizadas ✓</button>
 </form>
 <p id="msg"></p>
 <script>
@@ -255,13 +330,12 @@ def _handle_shop_page(event: dict) -> dict:
       body: JSON.stringify({{ token, purchased_ids: checked }})
     }});
     const data = await res.json();
-    document.getElementById('msg').textContent = data.message || 'Done!';
+    document.getElementById('msg').textContent = data.message || 'Pronto!';
     form.querySelector('button').disabled = true;
   }});
 </script>
 </body>
 </html>"""
-
     return _html(html)
 
 
@@ -278,13 +352,13 @@ def _handle_shop_finish(event: dict) -> dict:
         token = data.get("token", "")
         purchased_ids: list[int] = data.get("purchased_ids", [])
     except Exception:
-        return _json_resp({"message": "Bad request."}, 400)
+        return _json_resp({"message": "Requisição inválida."}, 400)
 
     db = SessionLocal()
     try:
         session = get_session_by_token(db, token)
         if not session:
-            return _json_resp({"message": "Session expired or not found."}, 404)
+            return _json_resp({"message": "Sessão expirada ou não encontrada."}, 404)
 
         if purchased_ids:
             deleted = delete_items_by_ids(db, purchased_ids)
@@ -296,10 +370,9 @@ def _handle_shop_finish(event: dict) -> dict:
         db.close()
 
     if deleted:
-        return _json_resp({"message": f"Removed {deleted} item(s). Happy shopping!"})
-    return _json_resp({"message": "No items marked — list unchanged."})
-
-
+        return _json_resp({"message": f"Removido(s) {deleted} item(ns). Boas compras!"})
+    return _json_resp({"message": "Nenhum item marcado — lista inalterada."})
+    
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------

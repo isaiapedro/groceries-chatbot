@@ -27,40 +27,54 @@ def get_or_create_member(db, phone_number: str) -> FamilyMember:
 def add_item(db, item_name: str, quantity: int = 1) -> str:
     existing = db.query(GroceryItem).filter(GroceryItem.item_name == item_name).first()
     if existing:
-        return f"'{item_name}' is already on the list (qty: {existing.quantity}). Use 'modify {item_name} <qty>' to update."
+        return f"'{item_name}' já está na lista (qtd: {existing.quantity}). Use 'modificar {item_name} <qtd>' para atualizar."
     category = categorize_item(item_name)
     item = GroceryItem(item_name=item_name, quantity=quantity, aisle_category=category)
     db.add(item)
     db.commit()
-    return f"Added {quantity}x {item_name}."
+    return f"Adicionado {quantity}x {item_name}."
 
 
 def modify_item(db, item_name: str, quantity: int) -> str:
     item = db.query(GroceryItem).filter(GroceryItem.item_name == item_name).first()
     if not item:
-        return f"'{item_name}' not found. Use 'add {item_name} <qty>' to add it first."
+        return f"'{item_name}' não encontrado. Use 'adicionar {item_name} <qtd>' primeiro."
     item.quantity = quantity
     db.commit()
-    return f"Updated {item_name} to {quantity}."
+    return f"Atualizado {item_name} para {quantity}."
 
 
 def delete_item(db, item_name: str) -> str:
     item = db.query(GroceryItem).filter(GroceryItem.item_name == item_name).first()
     if not item:
-        return f"'{item_name}' not found on the list."
+        return f"'{item_name}' não encontrado na lista."
     db.delete(item)
     db.commit()
-    return f"Removed {item_name} from the list."
+    return f"Removido {item_name} da lista."
+
+
+def delete_item_by_id(db, item_id: int) -> str:
+    item = db.query(GroceryItem).filter(GroceryItem.id == item_id).first()
+    if not item:
+        return "Item não encontrado."
+    name = item.item_name
+    db.delete(item)
+    db.commit()
+    return f"Removido {name} da lista."
+
+
+def find_items_fuzzy(db, search_term: str) -> list:
+    return db.query(GroceryItem).filter(GroceryItem.item_name.ilike(f"%{search_term}%")).all()
 
 
 def list_items(db) -> str:
     items = db.query(GroceryItem).all()
     if not items:
-        return "The grocery list is empty."
+        return "A lista de compras está vazia."
 
     grouped: dict[str, list[GroceryItem]] = {}
     for item in items:
-        cat = item.aisle_category or "Uncategorized"
+        cat = item.aisle_category or "Itens Especiais"
         grouped.setdefault(cat, []).append(item)
 
     lines = []
@@ -81,7 +95,7 @@ def get_all_items(db) -> list[dict]:
     result = []
     for cat in CATEGORY_ORDER:
         for item in sorted(
-            [i for i in items if (i.aisle_category or "Uncategorized") == cat],
+            [i for i in items if (i.aisle_category or "Itens Especiais") == cat],
             key=lambda x: x.item_name,
         ):
             result.append({"id": item.id, "name": item.item_name, "qty": item.quantity, "category": cat})

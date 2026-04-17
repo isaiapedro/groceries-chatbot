@@ -1,120 +1,108 @@
 CATEGORY_ORDER = [
-    "Produce",
-    "Meat & Seafood",
-    "Dairy & Eggs",
-    "Bakery",
-    "Pantry & Dry Goods",
-    "International & Global",
-    "Snacks & Sweets",
-    "Beverages",
-    "Frozen Foods",
-    "Household & Cleaning",
-    "Personal Care",
-    "Pet Care",
-    "Uncategorized",
+    "Hortifruti",
+    "Açougue & Peixaria",
+    "Laticínios & Ovos",
+    "Padaria",
+    "Despensa & Mercearia",
+    "Produtos Internacionais",
+    "Biscoitos & Doces",
+    "Bebidas",
+    "Congelados",
+    "Limpeza",
+    "Higiene Pessoal",
+    "Pet Shop",
+    "Itens Especiais",
 ]
 
 _CATEGORY_KEYWORDS: dict[str, list[str]] = {
-    "Produce": [
-        "apple", "apples", "banana", "bananas", "orange", "oranges", "lemon", "lemons",
-        "lime", "limes", "grape", "grapes", "strawberry", "strawberries", "blueberry",
-        "blueberries", "mango", "mangoes", "pineapple", "watermelon", "melon", "peach",
-        "pear", "cherry", "cherries", "avocado", "avocados",
-        "lettuce", "spinach", "kale", "arugula", "cabbage", "broccoli", "cauliflower",
-        "carrot", "carrots", "potato", "potatoes", "sweet potato", "onion", "onions",
-        "garlic", "tomato", "tomatoes", "pepper", "peppers", "cucumber", "celery",
-        "zucchini", "eggplant", "beetroot", "beet", "corn", "mushroom", "mushrooms",
-        "ginger", "herb", "herbs", "parsley", "cilantro", "basil", "mint", "rosemary",
-        "thyme", "alface", "tomate", "batata", "cebola", "cenoura", "pimentão",
-        "abobrinha", "pepino", "beterraba", "cogumelo", "ervas", "couve", "espinafre",
+    "Hortifruti": [
+        "alface", "tomate", "batata", "cebola", "cenoura", "pimentão", "abobrinha", 
+        "pepino", "beterraba", "cogumelo", "ervas", "couve", "espinafre", "maçã", 
+        "banana", "laranja", "limão", "uva", "morango", "mirtilo", "manga", 
+        "abacaxi", "melancia", "melão", "pêssego", "pera", "cereja", "abacate", 
+        "alho", "aipo", "berinjela", "milho", "gengibre", "salsinha", "coentro", 
+        "manjericão", "hortelã", "alecrim", "tomilho", "cebolinha", "repolho", 
+        "brócolis", "couve-flor", "batata-doce", "mandioca", "aipim", "macaxeira", 
+        "mamão", "maracujá", "kiwi", "tangerina", "mexerica", "ponkan", "goiaba",
+        "rúcula", "agrião", "alho-poró", "inhame", "chuchu", "quiabo", "vagem"
     ],
-    "Meat & Seafood": [
-        "beef", "chicken", "pork", "lamb", "turkey", "veal", "duck",
-        "steak", "ground beef", "mince", "sausage", "sausages", "bacon", "ham",
-        "salami", "pepperoni", "chorizo", "ribs",
-        "fish", "salmon", "tuna", "tilapia", "cod", "shrimp", "prawns", "crab",
-        "lobster", "oyster", "squid", "octopus", "sardine", "sardines",
-        "carne", "frango", "porco", "peixe", "camarão", "atum", "salmão",
-        "linguiça", "calabresa", "costela", "filé", "picanha",
+    "Açougue & Peixaria": [
+        "carne", "frango", "porco", "peixe", "camarão", "atum", "salmão", 
+        "linguiça", "calabresa", "costela", "filé", "picanha", "alcatra", 
+        "maminha", "fraldinha", "contrafilé", "patinho", "coxão mole", "coxão duro", 
+        "peito de frango", "coxa", "sobrecoxa", "asa", "coração", "bacon", 
+        "presunto", "mortadela", "salame", "salsicha", "lombo", "pernil", 
+        "tilápia", "bacalhau", "sardinha", "lula", "polvo", "ostra", "carne moída",
+        "peito de peru", "copa", "merluza", "pescada", "pintado", "tambaqui"
     ],
-    "Dairy & Eggs": [
-        "milk", "butter", "cheese", "yogurt", "yoghurt", "cream", "sour cream",
-        "cream cheese", "mozzarella", "cheddar", "parmesan", "brie", "gouda",
-        "egg", "eggs", "whipped cream", "condensed milk", "evaporated milk",
-        "leite", "manteiga", "queijo", "iogurte", "creme", "ovo", "ovos",
-        "requeijão", "nata",
+    "Laticínios & Ovos": [
+        "leite", "manteiga", "queijo", "iogurte", "creme de leite", "ovo", "ovos", 
+        "requeijão", "nata", "muçarela", "mussarela", "prato", "provolone", 
+        "parmesão", "gorgonzola", "minas", "coalho", "cheddar", "ricota", 
+        "leite condensado", "doce de leite", "margarina", "yakult", 
+        "leite fermentado", "coalhada", "petit suisse", "danoninho", "catupiry"
     ],
-    "Bakery": [
-        "bread", "bun", "buns", "roll", "rolls", "baguette", "croissant",
-        "muffin", "muffins", "cake", "pastry", "pastries", "donut", "donuts",
-        "bagel", "bagels", "tortilla", "tortillas", "pita", "flatbread",
-        "sourdough", "brioche",
-        "pão", "bolo", "torta", "rosca", "coxinha", "pãozinho",
+    "Padaria": [
+        "pão", "bolo", "torta", "rosca", "coxinha", "pãozinho", "pão francês", 
+        "pão de forma", "pão integral", "pão de queijo", "bisnaguinha", "baguete", 
+        "croissant", "sonho", "empada", "pastel", "esfiha", "pão doce", "sírio",
+        "broa", "panetone", "chocotone", "ciabatta"
     ],
-    "Pantry & Dry Goods": [
-        "rice", "pasta", "noodle", "noodles", "spaghetti", "penne", "flour",
-        "sugar", "salt", "pepper", "oil", "olive oil", "vinegar", "sauce",
-        "tomato sauce", "ketchup", "mustard", "mayonnaise", "soy sauce",
-        "bean", "beans", "lentil", "lentils", "chickpea", "chickpeas",
-        "oat", "oats", "cereal", "granola", "honey", "jam", "peanut butter",
-        "canned", "can", "soup", "broth", "stock", "spice", "spices",
-        "cinnamon", "paprika", "cumin", "oregano", "bay leaf",
-        "arroz", "feijão", "macarrão", "farinha", "açúcar", "sal", "azeite",
-        "molho", "óleo", "vinagre", "mostarda", "maionese", "lentilha",
-        "grão de bico", "aveia", "mel", "geleia",
+    "Despensa & Mercearia": [
+        "arroz", "feijão", "macarrão", "farinha", "açúcar", "sal", "azeite", 
+        "molho", "óleo", "vinagre", "mostarda", "maionese", "lentilha", 
+        "grão-de-bico", "aveia", "mel", "geleia", "ketchup", "extrato de tomate", 
+        "massa", "farofa", "farinha de mandioca", "farinha de trigo", "fubá", 
+        "polvilho", "tapioca", "amido de milho", "pimenta", "orégano", "canela", 
+        "colorau", "cominho", "louro", "caldo", "sopa", "enlatado", "milho em lata", 
+        "ervilha", "atum em lata", "sardinha em lata", "creme de avelã", "nutella",
+        "azeitona", "palmito", "champignon", "leite em pó", "fermento", "achocolatado"
     ],
-    "International & Global": [
-        "lamen", "ramen", "soy", "curry", "taco", "tortilla chip", "salsa",
-        "wasabi", "miso", "tofu", "kimchi", "sriracha", "tahini", "hummus",
-        "coconut milk", "fish sauce", "oyster sauce", "hoisin", "pad thai",
-        "nori", "sake", "mirin", "panko",
-        "shoyu", "missô", "leite de coco",
+    "Produtos Internacionais": [
+        "shoyu", "missô", "leite de coco", "lamen", "lámen", "miojo", "curry", 
+        "taco", "tortilha", "wasabi", "tofu", "tahine", "molho inglês", 
+        "molho de ostra", "alga", "nori", "kimchi", "sriracha", "óleo de gergelim",
+        "guacamole", "hummus", "homus"
     ],
-    "Snacks & Sweets": [
-        "chip", "chips", "crisp", "crisps", "popcorn", "pretzel", "cracker",
-        "crackers", "cookie", "cookies", "biscuit", "biscuits", "chocolate",
-        "candy", "candies", "gummy", "gummies", "lollipop", "marshmallow",
-        "brownie", "bar", "granola bar", "nut", "nuts", "almond", "almonds",
-        "cashew", "cashews", "peanut", "peanuts", "pistachio", "walnut",
-        "salgadinho", "biscoito", "bolacha", "amendoim", "castanha", "nozes",
-        "pipoca", "bala", "doce",
+    "Biscoitos & Doces": [
+        "salgadinho", "biscoito", "bolacha", "amendoim", "castanha", "nozes", 
+        "pipoca", "bala", "doce", "chocolate", "bombom", "chiclete", "marshmallow", 
+        "pirulito", "paçoca", "pé de moleque", "goiabada", "bananinha", 
+        "barra de cereal", "chips", "doritos", "ruffles", "wafer", "cookies",
+        "torrada", "suspiro", "gelatina", "pudim", "leite moça"
     ],
-    "Beverages": [
-        "water", "juice", "soda", "cola", "coffee", "tea", "milk tea",
-        "energy drink", "sports drink", "beer", "wine", "vodka", "whiskey",
-        "rum", "gin", "champagne", "sparkling water", "coconut water",
-        "smoothie", "lemonade",
-        "água", "suco", "refrigerante", "café", "chá", "cerveja", "vinho",
-        "cachaça", "vodka", "energético",
+    "Bebidas": [
+        "água", "suco", "refrigerante", "café", "chá", "cerveja", "vinho", 
+        "cachaça", "vodka", "energético", "gin", "rum", "espumante", "champanhe", 
+        "licor", "mate", "guaraná", "água com gás", "água de coco", "toddy", 
+        "nescau", "ice", "kombucha", "cápsula de café", "refrigerante zero"
     ],
-    "Frozen Foods": [
-        "frozen", "ice cream", "gelato", "sorbet", "popsicle",
-        "frozen pizza", "frozen meal", "frozen vegetable", "frozen fruit",
-        "frozen fish", "nugget", "nuggets", "fries", "french fries",
-        "sorvete", "picolé", "pizza congelada", "nuggets",
+    "Congelados": [
+        "sorvete", "picolé", "pizza congelada", "nuggets", "hambúrguer", 
+        "batata frita", "lasanha congelada", "prato pronto", "pão de queijo congelado", 
+        "polpa de fruta", "açaí", "legumes congelados", "empanado", "kibe congelado",
+        "torta congelada", "hambúrguer vegetal"
     ],
-    "Household & Cleaning": [
-        "detergent", "dish soap", "laundry", "bleach", "disinfectant",
-        "sponge", "sponges", "paper towel", "trash bag", "garbage bag",
-        "cleaning", "cleaner", "mop", "broom", "toilet paper", "tissue",
-        "napkin", "napkins", "foil", "aluminum foil", "plastic wrap",
-        "zip bag", "zip bags",
-        "detergente", "sabão", "desinfetante", "esponja", "papel toalha",
-        "saco de lixo", "papel higiênico", "guardanapo",
+    "Limpeza": [
+        "detergente", "sabão", "desinfetante", "esponja", "papel toalha", 
+        "saco de lixo", "guardanapo", "sabão em pó", "sabão líquido", "amaciante", 
+        "água sanitária", "cândida", "álcool", "limpador multiuso", "lustra-móveis", 
+        "limpa-vidros", "vassoura", "rodo", "pá", "pano de chão", "flanela", 
+        "palha de aço", "bombril", "tira-manchas", "desengordurante", "inseticida",
+        "repelente", "purificador de ar", "naftalina"
     ],
-    "Personal Care": [
-        "shampoo", "conditioner", "soap", "body wash", "shower gel",
-        "toothpaste", "toothbrush", "floss", "deodorant", "razor",
-        "shaving cream", "moisturizer", "lotion", "sunscreen",
-        "cotton", "band aid", "bandage", "medicine", "vitamin", "vitamins",
-        "ibuprofen", "paracetamol", "aspirin",
-        "sabonete", "creme", "protetor solar", "curativo", "remédio",
-        "vitamina", "desodorante",
+    "Higiene Pessoal": [
+        "sabonete", "creme", "protetor solar", "curativo", "remédio", "vitamina", 
+        "desodorante", "shampoo", "xampu", "condicionador", "pasta de dente", 
+        "creme dental", "escova de dente", "fio dental", "enxaguante bucal", 
+        "lâmina de barbear", "prestobarba", "espuma de barbear", "hidratante", 
+        "loção", "absorvente", "algodão", "cotonete", "band-aid", "papel higiênico",
+        "lenço umedecido", "fralda", "talco", "gel de cabelo", "creme de pentear"
     ],
-    "Pet Care": [
-        "dog food", "cat food", "pet food", "kibble", "treat", "treats",
-        "litter", "cat litter", "pet toy", "leash", "collar",
-        "ração", "areia para gato", "petisco",
+    "Pet Shop": [
+        "ração", "areia para gato", "petisco", "tapete higiênico", "sachê", 
+        "patê", "osso", "coleira", "brinquedo pet", "shampoo pet", "antipulgas",
+        "comedouro", "bebedouro", "bifinho"
     ],
 }
 
@@ -128,13 +116,18 @@ for _cat, _kws in _CATEGORY_KEYWORDS.items():
 def categorize_item(item_name: str) -> str:
     name_lower = item_name.strip().lower()
 
-    # Try full name match first (handles multi-word like "olive oil")
+    # Exact full-name match
     if name_lower in _KEYWORD_TO_CATEGORY:
         return _KEYWORD_TO_CATEGORY[name_lower]
 
-    # Try each word in the item name
+    # Multi-word keywords as substrings (longest first to prefer specific matches)
+    for keyword in sorted(_KEYWORD_TO_CATEGORY, key=len, reverse=True):
+        if " " in keyword and keyword in name_lower:
+            return _KEYWORD_TO_CATEGORY[keyword]
+
+    # Single-word match on each token
     for word in name_lower.split():
         if word in _KEYWORD_TO_CATEGORY:
             return _KEYWORD_TO_CATEGORY[word]
 
-    return "Uncategorized"
+    return "Itens Especiais"
