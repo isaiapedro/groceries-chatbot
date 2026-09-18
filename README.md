@@ -1,5 +1,9 @@
 # Grocery list chatbot
 
+> A serverless conversational workflow for capturing and managing grocery lists through WhatsApp.
+
+**Portfolio focus:** Python · AWS Lambda · PostgreSQL · SQLAlchemy · chat-oriented UX
+
 ![Diagram](diagram.png)
 
 ### Key frameworks and technologies
